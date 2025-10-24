@@ -26,27 +26,23 @@ cd parser-kkt-https-kktmobile-app.ru-
 ### Способ 1: Запуск на NixOS / с Nix
 
 ```bash
-# Войти в окружение разработки
 nix-shell shell.nix
 
-# Запустить парсер
 python get_real_schedule.py
 ```
 
 ### Способ 2: Запуск на других дистрибутивах Linux
 
 ```bash
-# Установить зависимости
 pip install requests
 
-# Запустить парсер
 python get_real_schedule.py
 ```
 
 ### Способ 3: Запуск на Windows
 
 ```cmd
-# Установить Python 3.11+ с python.org
+# Установить Python 3.11+
 # Установить зависимости
 pip install requests
 
