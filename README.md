@@ -21,3 +21,12 @@
 ```bash
 git clone https://github.com/Vykusi17/parser-kkt-https-kktmobile-app.ru-.git
 cd parser-kkt-https-kktmobile-app.ru-
+
+## Способ 1: Запуск на NixOS / с Nix
+bash
+
+# Войти в окружение разработки
+nix-shell shell.nix
+
+# Запустить парсер
+python get_real_schedule.py
