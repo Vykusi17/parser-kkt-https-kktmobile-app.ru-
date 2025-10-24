@@ -1,4 +1,3 @@
-```markdown
 # 📚 Парсер расписания ККТ
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
@@ -22,35 +21,3 @@
 ```bash
 git clone https://github.com/Vykusi17/parser-kkt-https-kktmobile-app.ru-.git
 cd parser-kkt-https-kktmobile-app.ru-
-```
-
-### Способ 1: Запуск на NixOS / с Nix
-
-```bash
-# Войти в окружение разработки
-nix-shell shell.nix
-
-# Запустить парсер
-python get_real_schedule.py
-```
-
-### Способ 2: Запуск на других дистрибутивах Linux
-
-```bash
-# Установить зависимости
-pip install requests
-
-# Запустить парсер
-python get_real_schedule.py
-```
-
-### Способ 3: Запуск на Windows
-
-```cmd
-# Установить Python 3.11+ с python.org
-# Установить зависимости
-pip install requests
-
-# Запустить парсер
-python get_real_schedule.py
-```
