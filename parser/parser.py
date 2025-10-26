@@ -114,4 +114,3 @@ if __name__ == "__main__":
     
     if answer in ['д', 'y', 'yes', 'да']:
         display_weekly_schedule()
-    
