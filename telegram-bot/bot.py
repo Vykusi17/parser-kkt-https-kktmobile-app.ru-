@@ -13,9 +13,11 @@ logging.basicConfig(
 
 BOT_TOKEN = "токен"
 API_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0',
     'Accept': 'application/json, text/plain, */*',
-    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjgiLCJpYXQiOjE3NjEzMzQwNjAsIm5iZiI6MTc2MTMzNDA2MCwianRpIjoiMGEwZjM3NzAtMjYxNC00MzZhLThiNTUtM2EyN2VlNmM5ZWQwIiwiZXhwIjoxNzYxNDIwNDYwLCJ0eXBlIjoiYWNjZXNzIiwiZnJlc2giOmZhbHNlfQ.CoZXOGlOqT1ov-o_avCZQkSlZ4RJvjbqE9CB_lEa3O0',
+    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjgiLCJpYXQiOjE3NjE1MTIzNjgsIm5iZiI6MTc2MTUxMjM2OCwianRpIjoiNTY0ODg5MDQtZjgyNy00NGUxLTg5OTAtNDliOTI2Zjk3ZDNkIiwiZXhwIjoxNzYxNTk4NzY4LCJ0eXBlIjoiYWNjZXNzIiwiZnJlc2giOmZhbHNlfQ.L98Y-YZpInD1CRSjmKlHklDRtCr2xmT3P_5G7sNBJj4',
+    'Origin': 'https://kktmobile-app.ru',
+    'Referer': 'https://kktmobile-app.ru/',
 }
 BASE_URL = 'https://api.kktmobile-app.ru'
 GROUP = 'И-232'
