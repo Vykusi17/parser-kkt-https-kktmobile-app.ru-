@@ -7,5 +7,6 @@ pkgs.mkShell {
     python3
     python3Packages.python-telegram-bot
     python3Packages.requests
+    python3Packages.cryptography
   ];
 }
