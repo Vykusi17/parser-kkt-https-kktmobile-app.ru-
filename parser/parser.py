@@ -37,14 +37,21 @@ class CredentialsManager:
             print(f"❌ Ошибка дешифрования: {e}")
             return None, None
 
+def format_room(room):
+    """Форматирование аудитории с большими буквами для дистанта"""
+    if room and ('дист' in room.lower() or 'дистант' in room.lower() or 'online' in room.lower()):
+        return "🚨 ДИСТАНТ 🚨"
+    return room
+
 class ScheduleParser:
     def __init__(self):
         self.session = requests.Session()
         self.base_url = 'https://api.kktmobile-app.ru'
         self.web_url = 'https://kktmobile-app.ru'
-        self.group = 'И-232'
         self.token = None
         self.token_file = 'token_cache.json'
+        self.schedule_type = "students"
+        self.groups = ["И-232", "И-233"] 
         
     def find_auth_endpoint(self):
         print("🔍 Поиск эндпоинта авторизации...")
@@ -85,7 +92,7 @@ class ScheduleParser:
             return f'{self.base_url}/alogin'
 
     def get_auth_token(self):
-        print("Авторизация...")
+        print("🔐 Авторизация...")
         
         endpoint = self.find_auth_endpoint()
         cred_manager = CredentialsManager()
@@ -108,7 +115,10 @@ class ScheduleParser:
             response = self.session.post(endpoint, json=auth_data, headers=headers, timeout=10)
             if response.status_code == 200:
                 token_data = response.json()
+                print("✅ Авторизация успешна")
                 return token_data.get('access_token')
+            else:
+                print(f"❌ Ошибка авторизации: {response.status_code}")
         except Exception as e:
             print(f"❌ Ошибка авторизации: {e}")
         
@@ -123,10 +133,12 @@ class ScheduleParser:
                     timestamp = data.get('timestamp', 0)
                     
                     if token and time.time() - timestamp < 43200: 
-                        if self.test_token(token):
-                            return token
-        except:
-            pass
+                        print("✅ Используется кэшированный токен")
+                        return token
+                    else:
+                        print("⚠️ Токен устарел, требуется обновление")
+        except Exception as e:
+            print(f"⚠️ Ошибка загрузки токена: {e}")
         return None
 
     def save_token_to_cache(self, token):
@@ -134,8 +146,9 @@ class ScheduleParser:
             data = {'token': token, 'timestamp': time.time()}
             with open(self.token_file, 'w') as f:
                 json.dump(data, f)
-        except:
-            pass
+            print("✅ Токен сохранен в кэш")
+        except Exception as e:
+            print(f"⚠️ Ошибка сохранения токена: {e}")
 
     def get_fresh_token(self):
         token = self.get_auth_token()
@@ -146,9 +159,15 @@ class ScheduleParser:
     def ensure_valid_token(self):
         cached_token = self.load_cached_token()
         if cached_token:
-            self.token = cached_token
-            return True
+            if self.test_token(cached_token):
+                self.token = cached_token
+                return True
+            else:
+                print("❌ Кэшированный токен невалиден")
+                if os.path.exists(self.token_file):
+                    os.remove(self.token_file)
         
+        print("🔄 Получение нового токена...")
         new_token = self.get_fresh_token()
         if new_token:
             self.token = new_token
@@ -157,7 +176,8 @@ class ScheduleParser:
         return False
 
     def test_token(self, token):
-        test_url = f'{self.base_url}/schedule/students/{self.group}/1'
+        groups_param = ",".join(self.groups)
+        test_url = f'{self.base_url}/api/public/schedule/{self.schedule_type}/{groups_param}/1'
         headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0',
             'Accept': 'application/json, text/plain, */*',
@@ -168,18 +188,27 @@ class ScheduleParser:
         
         try:
             response = self.session.get(test_url, headers=headers, timeout=10)
-            return response.status_code == 200
-        except:
+            if response.status_code == 200:
+                print("✅ Токен валиден")
+                return True
+            else:
+                print(f"❌ Токен невалиден: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Ошибка проверки токена: {e}")
             return False
 
     def get_schedule(self, day=None):
         if not self.ensure_valid_token():
+            print("❌ Не удалось получить валидный токен")
             return None
         
         if day is None:
             day = datetime.now().isoweekday()
         
-        url = f'{self.base_url}/schedule/students/{self.group}/{day}'
+        groups_param = ",".join(self.groups)
+        url = f'{self.base_url}/api/public/schedule/{self.schedule_type}/{groups_param}/{day}'
+        
         headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0',
             'Accept': 'application/json, text/plain, */*',
@@ -189,52 +218,68 @@ class ScheduleParser:
         }
         
         try:
-            response = self.session.get(url, headers=headers)
+            print(f"📡 Запрос расписания для дня {day}...")
+            response = self.session.get(url, headers=headers, timeout=10)
             
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                print(f"✅ Расписание получено успешно ({len(data)} пар)")
+                return data
             elif response.status_code == 401:
+                print("❌ Токен устарел, очищаем кэш...")
                 if os.path.exists(self.token_file):
                     os.remove(self.token_file)
                 self.token = None
                 return self.get_schedule(day)
+            else:
+                print(f"❌ Ошибка API: {response.status_code}")
                 
         except Exception as e:
-            print(f"❌ Ошибка: {e}")
+            print(f"❌ Ошибка получения расписания: {e}")
         
         return None
 
-    def display_schedule(self):
-        today = datetime.now()
-        current_day = today.isoweekday()
+    def display_schedule(self, day=None):
+        if day is None:
+            today = datetime.now()
+            current_day = today.isoweekday()
+            date_display = today.strftime('%d.%m.%Y')
+            day_name_key = current_day
+        else:
+            current_day = day
+            date_display = f"день {current_day}"
+            day_name_key = current_day
         
         days_names = {
             1: "понедельник", 2: "вторник", 3: "среда", 
             4: "четверг", 5: "пятница", 6: "суббота", 7: "воскресенье"
         }
         
-        print("🎓 Расписание группы И-232")
-        print("=" * 40)
-        print(f"📅 {today.strftime('%d.%m.%Y')}, {days_names[current_day]}\n")
+        print(f"\n🎓 Расписание для групп: {', '.join(self.groups)}")
+        print("=" * 50)
+        print(f"📅 {date_display}, {days_names.get(day_name_key, 'день')}")
+        print(f"📋 Тип: {'Для студентов' if self.schedule_type == 'students' else 'Для преподавателей'}\n")
         
-        schedule = self.get_schedule()
+        schedule = self.get_schedule(current_day)
         
         if schedule:
             if schedule:  
                 print(f"🎯 Пар сегодня: {len(schedule)}\n")
                 for i, lesson in enumerate(schedule, 1):
+                    room = format_room(lesson.get('room', 'Аудитория'))
                     print(f"{i}. {lesson.get('subject', 'Предмет')}")
                     print(f"   🕐 {lesson.get('start_time', '')} - {lesson.get('end_time', '')}")
                     print(f"   👤 {lesson.get('teacher_full_name', 'Преподаватель')}")
-                    print(f"   🏠 {lesson.get('room', 'Аудитория')}\n")
+                    print(f"   🏠 {room}\n")
             else:
-                print("🎉 Сегодня пар нет!")
+                print("🎉 На выбранный день пар нет!")
         else:
             print("❌ Не удалось получить расписание")
 
     def display_weekly_schedule(self):
-        print("\n📅 Расписание на неделю")
-        print("=" * 40)
+        print(f"\n📅 Расписание на неделю для групп: {', '.join(self.groups)}")
+        print("=" * 50)
+        print(f"📋 Тип: {'Для студентов' if self.schedule_type == 'students' else 'Для преподавателей'}\n")
         
         days_names = {
             1: "Понедельник", 2: "Вторник", 3: "Среда", 
@@ -243,17 +288,18 @@ class ScheduleParser:
         
         for day_num, day_name in days_names.items():
             print(f"\n{day_name}:")
-            print("-" * 20)
+            print("-" * 30)
             
             schedule = self.get_schedule(day_num)
             
             if schedule:
                 if schedule:  
                     for i, lesson in enumerate(schedule, 1):
+                        room = format_room(lesson.get('room', 'Аудитория'))
                         print(f"  {i}. {lesson.get('subject', 'Предмет')}")
                         print(f"     🕐 {lesson.get('start_time', '')} - {lesson.get('end_time', '')}")
                         print(f"     👤 {lesson.get('teacher_full_name', 'Преподаватель')}")
-                        print(f"     🏠 {lesson.get('room', 'Аудитория')}")
+                        print(f"     🏠 {room}")
                 else:
                     print("  🎉 Пар нет")
             else:
@@ -261,13 +307,43 @@ class ScheduleParser:
 
 def main():
     parser = ScheduleParser()
+    
+    print("🎓 Парсер расписания ККТ")
+    print("=" * 30)
+    print("✅ Автоматические настройки:")
+    print(f"   👤 Тип: Студент")
+    print(f"   👥 Группы: {', '.join(parser.groups)}")
+    
     parser.display_schedule()
     
-    print("\nПосмотреть расписание на неделю? (д/н): ", end='')
-    answer = input().lower()
-    
-    if answer in ['д', 'y', 'yes', 'да']:
-        parser.display_weekly_schedule()
+    while True:
+        print("\n🚀 Быстрое меню:")
+        print("1. Расписание на сегодня")
+        print("2. Расписание на неделю") 
+        print("3. Выбрать день")
+        print("4. Выход")
+        
+        choice = input("Ваш выбор (1-4): ").strip()
+        
+        if choice == "1":
+            parser.display_schedule()
+        elif choice == "2":
+            parser.display_weekly_schedule()
+        elif choice == "3":
+            print("\n📅 Выберите день (1-6): ", end='')
+            try:
+                day = int(input().strip())
+                if 1 <= day <= 6:
+                    parser.display_schedule(day)
+                else:
+                    print("❌ Неверный день")
+            except:
+                print("❌ Неверный ввод")
+        elif choice == "4":
+            print("👋 До свидания!")
+            break
+        else:
+            print("❌ Неверный выбор")
 
 if __name__ == "__main__":
     main()
