@@ -23,47 +23,48 @@
 ```bash
 git clone https://github.com/Vykusi17/parser-kkt-https-kktmobile-app.ru-.git
 cd parser-kkt-https-kktmobile-app.ru-
-
+```
 🖥 Консольная версия
+```bash
 Запуск на NixOS / с Nix
 bash
-
+```
 cd parser
 nix-shell shell.nix
 python parser.py
 
 Запуск на других дистрибутивах Linux
 bash
-
+```bash
 cd parser
 pip install requests cryptography
 python parser.py
-
+```
 Запуск на Windows
 cmd
-
+```bash
 cd parser
 pip install requests cryptography
 python parser.py
-
+```
 🤖 Telegram бот
 
 Бот доступен по ссылке: @parser_kkt_bot
 Локальный запуск бота
 С использованием Nix
 bash
-
+```bash
 cd telegram-bot
 nix-shell bot.nix
 python bot.py
-
+```
 С использованием pip
 bash
-
+```bash
 cd telegram-bot
 pip install -r requirements.txt
 python bot.py
-
+```
 Команды бота
 
     /start - начать работу
@@ -77,20 +78,6 @@ python bot.py
     /gachi - случайная гачи-фраза
 
     /help - справка по командам
-
-🚨 Особенности отображения
-
-    Дистанционные занятия отображаются как 🚨 ДИСТАНТ 🚨 для лучшей видимости
-
-    Поддерживаются различные варианты обозначений дистанта: "дист", "дистант", "online"
-
-    В Telegram боте дистант выделяется жирным шрифтом и эмодзи
-
-🎯 Поддерживаемые группы
-
-    И-232
-
-    И-233
 
 🔧 Технические особенности
 
