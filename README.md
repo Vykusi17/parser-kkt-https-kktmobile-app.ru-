@@ -25,14 +25,13 @@ git clone https://github.com/Vykusi17/parser-kkt-https-kktmobile-app.ru-.git
 cd parser-kkt-https-kktmobile-app.ru-
 ```
 🖥 Консольная версия
-```bash
 Запуск на NixOS / с Nix
 bash
-```
+```bash
 cd parser
 nix-shell shell.nix
 python parser.py
-
+```
 Запуск на других дистрибутивах Linux
 bash
 ```bash
